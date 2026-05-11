@@ -1,9 +1,9 @@
 {
     "location": "滋賀県大津市大石中",
-    "wbgt": "0",
-    "temp": "0",
+    "wbgt": "16.4",
+    "temp": "20.0",
     "weather": "晴れ/曇",
-    "wind_dir": "通信エラー",
-    "wind_speed": "0",
-    "updated": "2026/05/11 07:55"
+    "wind_dir": "取得不可",
+    "wind_speed": "0.0",
+    "updated": "2026/05/11 08:02"
 }
