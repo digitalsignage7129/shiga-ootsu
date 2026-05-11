@@ -2,154 +2,140 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>WBGT Monitor - Oishi</title>
+    <title>WBGT SIGNAGE - OISHI</title>
     <style>
-        /* サイネージサイズ固定 */
-        :root {
-            --bg-color: #000000;
-            --main-text: #ffffff;
-            --sub-text: #aaaaaa;
-            --accent-color: #00ff00; /* 安全時は緑 */
+        /* 画面全体の配置設定 */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #333; /* 背景はグレー */
+            display: flex;
+            justify-content: center; /* 左右中央 */
+            align-items: center;     /* 上下中央 */
+            height: 100vh;
+            overflow: hidden;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
+        /* 690x728のサイネージ本体 */
+        .signage-canvas {
             width: 690px;
             height: 728px;
-            background-color: var(--bg-color);
-            color: var(--main-text);
-            font-family: "Helvetica Neue", Arial, "Hiragino Kaku Gothic ProN", "Meiryo", sans-serif;
-            border: 4px solid var(--accent-color);
-            overflow: hidden;
+            background-color: #000000;
+            color: #ffffff;
             display: flex;
             flex-direction: column;
+            border: 4px solid #444;
+            box-sizing: border-box;
+            position: relative;
         }
 
-        /* 危険度別カラー */
-        .danger { --accent-color: #ff0000; }     /* 危険：赤 */
-        .warning { --accent-color: #ffaa00; }    /* 警戒：オレンジ */
-        .safe { --accent-color: #00ccff; }       /* 安全：青 */
+        /* 状態に応じた色変化 */
+        .status-danger { --accent: #ff0000; }
+        .status-warning { --accent: #ffaa00; }
+        .status-safe { --accent: #00ccff; }
 
         .header {
-            height: 60px;
-            background: var(--accent-color);
+            background-color: var(--accent);
             color: #000;
+            font-size: 36px;
             font-weight: bold;
-            font-size: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            padding: 15px;
+            text-align: center;
         }
 
-        .main-content {
+        .main-display {
             flex: 1;
             display: flex;
             flex-direction: column;
-            align-items: center;
             justify-content: center;
-            padding: 20px;
+            align-items: center;
         }
 
-        .wbgt-label { font-size: 40px; color: var(--sub-text); }
-        .wbgt-value { 
-            font-size: 220px; 
-            font-weight: 900; 
-            line-height: 0.9;
-            color: var(--main-text);
-        }
+        .wbgt-label { font-size: 40px; color: #888; }
+        .wbgt-value { font-size: 240px; font-weight: 900; line-height: 1; }
         .wbgt-unit { font-size: 80px; }
 
-        .weather-info {
-            width: 100%;
+        .info-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            padding: 20px;
             background: #111;
+            padding: 20px;
+            gap: 20px;
         }
 
-        .info-box {
-            border-left: 10px solid var(--accent-color);
+        .info-item {
+            border-left: 8px solid var(--accent);
             padding-left: 15px;
         }
 
-        .info-label { font-size: 24px; color: var(--sub-text); display: block; }
-        .info-data { font-size: 44px; font-weight: bold; }
+        .label { font-size: 24px; color: #888; display: block; }
+        .value { font-size: 48px; font-weight: bold; }
 
         .footer {
-            height: 50px;
-            font-size: 20px;
-            color: var(--sub-text);
             padding: 10px 20px;
+            font-size: 20px;
+            color: #666;
             text-align: right;
-            border-top: 1px solid #333;
+            border-top: 1px solid #222;
         }
     </style>
 </head>
-<body id="body-status" class="safe">
+<body id="status-body" class="status-safe">
 
-<div class="header" id="status-text">大石中付近：ほぼ安全</div>
+<div class="signage-canvas">
+    <div class="header" id="header-text">大石中付近：計測中</div>
+    
+    <div class="main-display">
+        <div class="wbgt-label">暑さ指数 (WBGT)</div>
+        <div class="wbgt-value" id="wbgt-val">--<span class="wbgt-unit">℃</span></div>
+    </div>
 
-<div class="main-content">
-    <div class="wbgt-label">暑さ指数(WBGT)</div>
-    <div class="wbgt-value" id="wbgt-val">24.5<span class="wbgt-unit">℃</span></div>
+    <div class="info-grid">
+        <div class="info-item">
+            <span class="label">気温</span>
+            <span class="value" id="temp-val">--.-℃</span>
+        </div>
+        <div class="info-item">
+            <span class="label">天気</span>
+            <span class="value" id="weather-val">--</span>
+        </div>
+        <div class="info-item">
+            <span class="label">風向</span>
+            <span class="value" id="wind-dir-val">--</span>
+        </div>
+        <div class="info-item">
+            <span class="label">風速</span>
+            <span class="value" id="wind-spd-val">--m/s</span>
+        </div>
+    </div>
+
+    <div class="footer" id="update-time">Update: syncing...</div>
 </div>
-
-<div class="weather-info">
-    <div class="info-box">
-        <span class="info-label">気温</span>
-        <span class="info-data" id="temp-val">28.0℃</span>
-    </div>
-    <div class="info-box">
-        <span class="info-label">天気</span>
-        <span class="info-data" id="weather-val">晴れ</span>
-    </div>
-    <div class="info-box">
-        <span class="info-label">風向き</span>
-        <span class="info-data" id="wind-dir-val">北西</span>
-    </div>
-    <div class="info-box">
-        <span class="info-label">風速</span>
-        <span class="info-data" id="wind-speed-val">2.5m/s</span>
-    </div>
-</div>
-
-<div class="footer" id="update-time">Update: 2026/05/11 16:30</div>
 
 <script>
-    async function update() {
+    async function refresh() {
         try {
             const res = await fetch('data.json?' + Date.now());
             const data = await res.json();
-
+            
             document.getElementById('wbgt-val').innerHTML = `${data.wbgt}<span class="wbgt-unit">℃</span>`;
             document.getElementById('temp-val').innerText = `${data.temp}℃`;
             document.getElementById('weather-val').innerText = data.weather;
             document.getElementById('wind-dir-val').innerText = data.wind_dir;
-            document.getElementById('wind-speed-val').innerText = `${data.wind_speed}m/s`;
+            document.getElementById('wind-spd-val').innerText = `${data.wind_speed}m/s`;
             document.getElementById('update-time').innerText = `Update: ${data.updated}`;
 
-            const val = parseFloat(data.wbgt);
-            const body = document.getElementById('body-status');
-            const statusText = document.getElementById('status-text');
-
-            if (val >= 31) {
-                body.className = 'danger';
-                statusText.innerText = '大石中付近：【危険】作業中止検討';
-            } else if (val >= 28) {
-                body.className = 'warning';
-                statusText.innerText = '大石中付近：【厳重警戒】激しい運動中止';
-            } else {
-                body.className = 'safe';
-                statusText.innerText = '大石中付近：ほぼ安全（注意点検）';
-            }
-        } catch (e) {
-            console.log("Fetching data...");
-        }
+            const v = parseFloat(data.wbgt);
+            const b = document.getElementById('status-body');
+            const h = document.getElementById('header-text');
+            if(v >= 31) { b.className='status-danger'; h.innerText='大石中：【危険】作業中止検討'; }
+            else if(v >= 28) { b.className='status-warning'; h.innerText='大石中：【厳重警戒】'; }
+            else { b.className='status-safe'; h.innerText='大石中：ほぼ安全'; }
+        } catch(e) {}
     }
-    setInterval(update, 60000);
-    update();
+    setInterval(refresh, 60000);
+    refresh();
 </script>
 </body>
 </html>
