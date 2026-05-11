@@ -11,7 +11,155 @@
             background-color: #333; /* 背景はグレー */
             display: flex;
             justify-content: center; /* 左右中央 */
-            align-items: center;     /* 上下中央 */
+            ali<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>WBGT SIGNAGE - OISHI</title>
+    <style>
+        /* サイネージ全体のサイズ固定 */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 690px;
+            height: 728px;
+            background-color: #000;
+            overflow: hidden;
+            font-family: 'Helvetica Neue', Arial, "Hiragino Sans", sans-serif;
+        }
+
+        /* 状態に応じた色定義 */
+        :root { --accent: #00ccff; }
+        .status-danger { --accent: #ff0000; }
+        .status-warning { --accent: #ffaa00; }
+        .status-safe { --accent: #00ccff; }
+
+        .container {
+            width: 690px;
+            height: 728px;
+            display: flex;
+            flex-direction: column;
+            border: 4px solid var(--accent);
+            box-sizing: border-box;
+        }
+
+        .header {
+            background-color: var(--accent);
+            color: #000;
+            font-size: 38px;
+            font-weight: 900;
+            padding: 15px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .main-display {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(circle at center, #111 0%, #000 100%);
+        }
+
+        .wbgt-label { font-size: 44px; color: #aaa; margin-bottom: 10px; }
+        .wbgt-value { font-size: 260px; font-weight: 900; line-height: 0.8; color: #fff; }
+        .wbgt-unit { font-size: 80px; margin-left: 10px; }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            background: #0a0a0a;
+            padding: 25px;
+            gap: 20px;
+            border-top: 2px solid #222;
+        }
+
+        .info-item {
+            border-left: 10px solid var(--accent);
+            padding-left: 20px;
+        }
+
+        .label { font-size: 24px; color: #888; margin-bottom: 5px; display: block; }
+        .value { font-size: 52px; font-weight: bold; color: #eee; }
+
+        .footer {
+            padding: 10px 20px;
+            font-size: 22px;
+            color: #555;
+            text-align: right;
+            background: #000;
+        }
+    </style>
+</head>
+<body id="status-body" class="status-safe">
+
+<div class="container">
+    <div class="header" id="header-text">大石中：データ読込中</div>
+    
+    <div class="main-display">
+        <div class="wbgt-label">暑さ指数 (WBGT)</div>
+        <div class="wbgt-value" id="wbgt-val">--<span class="wbgt-unit">℃</span></div>
+    </div>
+
+    <div class="info-grid">
+        <div class="info-item">
+            <span class="label">気温</span>
+            <span class="value" id="temp-val">--.-℃</span>
+        </div>
+        <div class="info-item">
+            <span class="label">天気</span>
+            <span class="value" id="weather-val">--</span>
+        </div>
+        <div class="info-item">
+            <span class="label">風向</span>
+            <span class="value" id="wind-dir-val">--</span>
+        </div>
+        <div class="info-item">
+            <span class="label">風速</span>
+            <span class="value" id="wind-spd-val">--m/s</span>
+        </div>
+    </div>
+
+    <div class="footer" id="update-time">SYNCING...</div>
+</div>
+
+<script>
+    async function refresh() {
+        try {
+            // URLの末尾に時間を付けてキャッシュを強制回避
+            const res = await fetch('data.json?t=' + new Date().getTime());
+            if (!res.ok) throw new Error('Network error');
+            const data = await res.json();
+            
+            document.getElementById('wbgt-val').innerHTML = `${data.wbgt}<span class="wbgt-unit">℃</span>`;
+            document.getElementById('temp-val').innerText = `${data.temp}℃`;
+            document.getElementById('weather-val').innerText = data.weather;
+            document.getElementById('wind-dir-val').innerText = data.wind_dir;
+            document.getElementById('wind-spd-val').innerText = `${data.wind_speed}m/s`;
+            document.getElementById('update-time').innerText = `最終更新: ${data.updated}`;
+
+            const v = parseFloat(data.wbgt);
+            const b = document.getElementById('status-body');
+            const h = document.getElementById('header-text');
+            
+            if(v >= 31) { 
+                b.className='status-danger'; h.innerText='大石中：【危険】作業中止検討'; 
+            } else if(v >= 28) { 
+                b.className='status-warning'; h.innerText='大石中：【厳重警戒】'; 
+            } else { 
+                b.className='status-safe'; h.innerText='大石中：ほぼ安全'; 
+            }
+        } catch(e) {
+            console.error("Update failed", e);
+        }
+    }
+    // 30秒ごとにチェック
+    setInterval(refresh, 30000);
+    refresh();
+</script>
+</body>
+</html>gn-items: center;     /* 上下中央 */
             height: 100vh;
             overflow: hidden;
             font-family: 'Helvetica Neue', Arial, sans-serif;
